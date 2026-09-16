@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<!-- Page type: bug-fix. Details: ../references/bug-fix.md. Not a universal page template. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TITLE</title>
+<style>
+  :root{
+    --ink:#16181d; --dim:#626a75; --line:#dfe3e8; --panel:#f7f8fa;
+    --bad:#c8322b; --bad-bg:#fdecea; --good:#1a7f4b; --good-bg:#e8f6ee;
+    --mark:#b45309; --mark-bg:#fef3c7; --accent:#2f4f8f;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Malgun Gothic","Noto Sans CJK SC","Microsoft YaHei",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e9ecef;font-family:var(--sans);color:var(--ink);
+       display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .page{width:1280px;height:720px;background:#fff;padding:24px 28px;
+        display:flex;flex-direction:column;gap:10px;overflow:visible;
+        box-shadow:0 2px 24px rgba(0,0,0,.13)}
+  #fit{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;transform-origin:top left}
+
+  /* ---------- header ---------- */
+  header{display:flex;align-items:baseline;gap:10px;
+         border-bottom:2px solid var(--ink);padding-bottom:8px}
+  .tag{font:600 12px/1 var(--mono);color:#fff;background:var(--bad);
+       padding:5px 8px;border-radius:3px;letter-spacing:.4px}
+  h1{font-size:44px;line-height:1.08;min-width:0;font-weight:700;letter-spacing:-.3px;flex:1}
+  .meta{font:400 12px/1.3 var(--mono);color:var(--dim);text-align:right;white-space:nowrap}
+
+  /* ---------- 2/3 + 1/3 ---------- */
+  .body{flex:1;min-height:0;display:grid;grid-template-columns:2fr 1fr;gap:16px}
+  .stack{display:flex;flex-direction:column;gap:8px;min-width:0;overflow:visible}
+
+  /* narrative blocks: no boxes, an accent spine instead — denser */
+  .blk{border-left:3px solid var(--accent);padding-left:10px;min-width:0}
+  .blk h2{font-size:18px;font-weight:700;letter-spacing:.2px;color:var(--accent);
+          display:flex;align-items:center;gap:7px;margin-bottom:4px}
+  .blk h2 .n{display:inline-flex;align-items:center;justify-content:center;
+       width:20px;height:20px;border-radius:50%;background:var(--accent);
+       color:#fff;font:700 12px/1 var(--sans);flex-shrink:0}
+  .note{font-size:18px;line-height:1.3;color:#3c424b;margin-top:4px}
+  .note b{color:var(--bad)}
+
+  /* ---------- code / log ---------- */
+  .code{font:400 16px/1.3 var(--mono);background:var(--panel);
+        border:1px solid var(--line);border-radius:4px;padding:5px 8px;
+        white-space:pre-wrap;word-break:break-all;overflow:visible}
+  .lbl{font:700 12px/1 var(--mono);color:var(--dim);letter-spacing:.5px;margin-bottom:3px}
+  .row + .row{margin-top:6px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pair > .row{min-width:0;margin-top:0}
+  .same{color:var(--dim)}
+  .fold{color:var(--dim);background:#eceff2;border-radius:3px;padding:0 4px;
+        font-size:14px;letter-spacing:.3px}
+  .bad{background:var(--bad-bg);color:var(--bad);font-weight:700;border-radius:2px;padding:1px 2px}
+  .good{background:var(--good-bg);color:var(--good);font-weight:700;border-radius:2px;padding:1px 2px}
+  .mark{background:var(--mark-bg);color:var(--mark);font-weight:700;border-radius:2px;padding:1px 2px}
+
+  /* ---------- diff ---------- */
+  .diff{font:400 16px/1.3 var(--mono);border:1px solid var(--line);
+        border-radius:4px;overflow:visible}
+  .diff div{padding:2.5px 9px;white-space:pre-wrap;word-break:break-all}
+  .diff .del{background:var(--bad-bg);color:var(--bad)}
+  .diff .add{background:var(--good-bg);color:var(--good)}
+  .diff .ctx{background:var(--panel);color:#525862}
+
+  /* ---------- right rail: examples & raw evidence ---------- */
+  .rail{background:var(--panel);border:1px solid var(--line);border-radius:5px;
+        padding:10px 11px;display:flex;flex-direction:column;gap:10px;
+        min-width:0;overflow:visible}
+  .rail > h3{font:700 12px/1 var(--mono);color:var(--dim);letter-spacing:1px;
+             padding-bottom:7px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .item{min-width:0}
+  .item .cap{font:700 12px/1.3 var(--mono);color:var(--accent);margin-bottom:4px;
+             display:flex;align-items:center;gap:6px}
+  /* rail label — the anchor the left column cites */
+  .id{display:inline-flex;align-items:center;justify-content:center;
+      width:18px;height:18px;border-radius:3px;background:var(--accent);
+      color:#fff;font:700 12px/1 var(--mono);flex-shrink:0}
+  /* citation chip — appears in the left column, points at a rail label */
+  .ref{display:inline-flex;align-items:center;justify-content:center;
+       width:18px;height:18px;border-radius:3px;background:#fff;
+       border:1px solid var(--accent);color:var(--accent);
+       font:700 12px/1 var(--mono);margin-left:5px;flex-shrink:0}
+  .item .raw{font:400 14px/1.3 var(--mono);color:#3c424b;background:#fff;
+             border:1px solid var(--line);border-radius:3px;padding:6px 7px;
+             white-space:pre-wrap;word-break:break-all}
+  .item img{width:100%;border:1px solid var(--line);border-radius:3px;display:block}
+
+  table.rules{border-collapse:collapse;font:400 16px/1.25 var(--mono);width:100%}
+  table.rules td{padding:4px 6px;border-bottom:1px solid var(--line)}
+  table.rules tr:last-child td{border-bottom:0}
+  td.from{font-weight:600;white-space:nowrap}
+  td.arr{color:var(--dim);text-align:center;width:26px}
+  td.to{color:var(--bad);font-weight:700}
+
+  footer{display:flex;justify-content:space-between;font:400 12px/1 var(--mono);
+         color:var(--dim);border-top:1px solid var(--line);padding-top:7px;flex-shrink:0}
+
+  @page{size:1280px 720px;margin:0}
+  @media print{body{background:#fff;display:block}
+               .page{box-shadow:none;width:100%;height:100vh}}
+/* Technical-page typography; see references/bug-fix.md for measured references. */
+h1{font-size:21.33px;line-height:1.15;font-weight:700;letter-spacing:0}
+header{min-height:36px;padding-bottom:6px;border-bottom-width:1px}
+.blk h2{font-size:12.44px;gap:5px}.note{font-size:10.67px;line-height:1.4}
+.code,.diff,table.rules{font-size:10.67px;line-height:1.4}
+.item .raw{font-size:8.89px;line-height:1.4}.item .cap{font-size:8.89px}
+.tag,.meta,.lbl,.rail>h3,footer{font-size:8.89px}.fold{font-size:8.89px}
+.blk h2 .n,.id,.ref{width:13px;height:13px;font-size:8px}
+.page{padding:24px 50px}.stack{gap:10px}.rail{gap:12px}.body{align-items:start}
+</style>
+</head>
+<body>
+<div class="page"><div id="fit">
+
+  <header>
+    <span class="tag">BUG</span>
+    <h1>TITLE</h1>
+    <div class="meta">COMPONENT<br>DATE · COMMIT</div>
+  </header>
+
+  <div class="body">
+
+    <!-- ============ LEFT 2/3 : the argument, blocks 1-4 in reading order ======= -->
+    <div class="stack">
+
+      <section class="blk">
+        <h2><span class="n">1</span>SYMPTOM_HEADING<span class="ref">A</span></h2>
+        <div class="row"><div class="lbl">EXPECTED_LABEL</div><div class="code">…</div></div>
+        <div class="row"><div class="lbl">ACTUAL_LABEL</div><div class="code">…</div></div>
+      </section>
+
+      <section class="blk">
+        <h2><span class="n">2</span>CAUSE_HEADING<span class="ref">B</span></h2>
+        <div class="code">…</div>
+        <p class="note">…</p>
+      </section>
+
+      <section class="blk">
+        <h2><span class="n">3</span>FIX_HEADING</h2>
+        <div class="diff">
+          <div class="ctx">…</div>
+          <div class="del">- …</div>
+          <div class="add">+ …</div>
+        </div>
+      </section>
+
+      <section class="blk">
+        <h2><span class="n">4</span>BEFORE_AFTER_HEADING</h2>
+        <div class="row"><div class="lbl">BEFORE_LABEL</div><div class="code">…</div></div>
+        <div class="row"><div class="lbl">AFTER_LABEL</div><div class="code">…</div></div>
+      </section>
+
+    </div>
+
+    <!-- ============ RIGHT 1/3 : examples and raw evidence ============ -->
+    <aside class="rail">
+      <h3>RAIL_HEADING</h3>
+
+      <div class="item">
+        <div class="cap"><span class="id">A</span>…</div>
+        <table class="rules">
+          <tr><td class="from">…</td><td class="arr">→</td><td class="to">…</td></tr>
+        </table>
+      </div>
+
+      <div class="item">
+        <div class="cap"><span class="id">B</span>…</div>
+        <div class="raw">…</div>
+      </div>
+
+      <!-- screenshot evidence, embedded as a data URI to stay self-contained
+      <div class="item"><div class="cap"><span class="id">C</span>…</div><img src="data:image/png;base64,…" alt=""></div> -->
+    </aside>
+
+  </div>
+
+  <footer><span>FOOTER_LEFT</span><span>FOOTER_RIGHT</span></footer>
+
+</div></div>
+
+<script>
+/* Report overflow without changing typography or concealing content. */
+function checkOverflow(){
+  const page=document.querySelector('.page');
+  const nodes=[page,...page.querySelectorAll('#fit,.body,.stack,.rail,.blk,.code,.diff,.raw,header,footer')];
+  const overflow=nodes.some(el=>el.scrollHeight>el.clientHeight+1 || el.scrollWidth>el.clientWidth+1);
+  page.dataset.overflow=String(overflow);
+  if(overflow) console.warn('Slide overflow: reorganize content before delivery.');
+}
+window.addEventListener('load',()=>document.fonts.ready.then(checkOverflow));
+</script>
+</body>
+</html>
