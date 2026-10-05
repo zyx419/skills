@@ -14,6 +14,13 @@ them; choose each page independently from its communication purpose.
 - Deliver one HTML preview file by default. Use a single 16:9 page unless the
   user requests multiple pages; then place those pages in the same HTML file
   with previous/next buttons and keyboard navigation.
+- For multi-page decks, preserve the current slide across browser refreshes.
+  Record the page in the URL fragment (for example, `#page=10`), restore it on
+  startup, and update it for button, keyboard, and selector navigation. This
+  also lets a copied URL open the intended slide directly. Prefer
+  `history.replaceState` to avoid adding a history entry for every slide.
+  Handle missing, invalid, and out-of-range page numbers without breaking
+  navigation; do not unconditionally reset to the first slide on load.
 - In a repository, write to `reports/` unless the user names another location.
   Otherwise use an available writable output directory. Return a clickable
   HTML link.
@@ -23,6 +30,8 @@ them; choose each page independently from its communication purpose.
   default.
 - Keep the HTML self-contained and usable offline. Check navigation and
   render every populated page for clipping and overflow before delivery.
+  For multi-page decks, also verify that refresh retains the selected slide,
+  a direct page link opens that slide, and invalid page numbers recover safely.
 
 These shared delivery rules do not establish a shared content layout, font
 hierarchy, heading set, language rule, or footer format. Those details belong
